@@ -1,7 +1,18 @@
 import java.util.Stack;
 import java.util.ArrayList;
-// import hw3.GenericStack;
 
+/*
+An evaluator to take calculations including:
+- addition
+- subtraction
+- multiplication
+- division
+- *differentiation
+- *integration
+- etc.
+The final result would be displayed in the screen.
+* means that the function is under implementation.
+*/
 public class ArithmeticEvaluator { // add generic
 	
 	private static final String ADD = "+";
@@ -11,15 +22,17 @@ public class ArithmeticEvaluator { // add generic
 	private static final String LTP = "(";
 	private static final String RTP = ")";
 	private static final String SP = " ";
+	//private static final String 
+	private static final ArrayList<String> NUMS = new ArrayList<String>(Arrays.asList("0","1","2","3","4","5","6","7","8","9"));
 	private static final int HIGH = 3;
 	private static final int MEDIUM = 2;
 	private static final int LOW = 1;
-	private Stack<String> numbers;
+	private Stack<Integer> numbers;
 	private Stack<String> operators;
 
-	private Stack<String> getNumbers() { return numbers; }
+	private Stack<Integer> getNumbers() { return numbers; }
 
-	private Stack<String> getOperators() { return numbers; }
+	private Stack<String> getOperators() { return operators; }
 
 	public ArithmeticEvaluator() {
 		numbers = new Stack<>();
@@ -62,21 +75,28 @@ public class ArithmeticEvaluator { // add generic
 		double result = 0.0;
 		switch (op) {
 		case ADD:
+			System.out.println("We are adding a and b:");
 			result = a + b;
+			break;
 		case SUB:
+			System.out.println("We are subtract a from b:");
 			result = a - b;
+			break;
 		case MUL:
+			System.out.println("We are multiplying a and b:");
 			result = a * b;
+			break;
 		case DIV:
+			System.out.println("We are dividng a by b:");
 			result = a / b;
+			break;
 		}
 		return result;
 	}
 
 	private void distribute(String expression) {
-		Stack<String> numbers = this.getNumbers();
+		Stack<Integer> numbers = this.getNumbers();
 		Stack<String> operators = this.getOperators();
-		//private static final String 
 	}
 
 	/*
@@ -94,6 +114,7 @@ public class ArithmeticEvaluator { // add generic
 	order and a correct count of matching points.
 	*/
 	private boolean isValid(String expression) {
+		// TODO: catch the EmptyStackException
 		return true;
 	}
 
@@ -104,10 +125,9 @@ public class ArithmeticEvaluator { // add generic
 	for the moment is mainly Integer (int).
 	*/
 	public String evaluate(String expression) {
-		// call isValid() with if-else then pass in the numbers
-		Stack<String> numbers = this.getNumbers();
+		Stack<Integer> numbers = this.getNumbers();
 		Stack<String> operators = this.getOperators();
-		ArrayList<String> subResults = new ArrayList<>();  // the space to store the results of the partial numbers
+		ArrayList<String> tempOps = new ArrayList<>(); // the space to store the popped operators
 		int count = expression.length();
 		double result = 0.0;
 		String currentNotation = ""; // generically store every single item to be passed in
@@ -116,28 +136,6 @@ public class ArithmeticEvaluator { // add generic
 		for (index = 0; index < count; index++) {
 			currentNotation = String.valueOf(expression.charAt(index));
 			switch (currentNotation) {
-			case LTP:
-			case ADD:
-			case SUB:
-			case MUL:
-			case DIV:
-				System.out.println("We push " + currentNotation + " into the operator stack.");
-				operators.push(currentNotation);
-				break;
-			case RTP:
-				System.out.println("We push the closing parenthesis into the operator stack.");
-				operators.push(RTP);
-				System.out.println("We start to pop the elements in the operator stack until the parenthesis matches.");
-				boolean matched = false;
-				double result = 0.0;
-				String popped = "";
-				while (!matched) {
-					if (popped.equals(LTP)) matched = true;
-					else popped = operators.pop();
-					System.out.println("popped: " + popped);
-				}
-				subResults.push(result);
-				break;
 			case "0":
 			case "1":
 			case "2":
@@ -149,13 +147,72 @@ public class ArithmeticEvaluator { // add generic
 			case "8":
 			case "9":
 				System.out.println("We push the number " + currentNotation + " into the number stack.");
-				numbers.push(currentNotation); // call Integer.valueOf() later in the computation operations
+				numbers.push(Integer.parseInt(currentNotation)); // call Integer.valueOf() later in the computation operations
 				break;
-			case SP: continue;
+			case LTP:
+			case ADD:
+			case SUB:
+			case MUL:
+			case DIV:
+				System.out.println("We push " + currentNotation + " into the operator stack.");
+				operators.push(currentNotation);
+				break;
+			case RTP:
+				System.out.println("We push the closing parenthesis into the operator stack, popping the elements until the parentheses match.");
+				operators.push(RTP);
+				boolean matched = false;
+				double subResult = 0.0;
+				String popped = "";
+				int pASCII = 0;
+				while (!matched) {
+					if (popped.equals(LTP)) { // the current pair of brackets is done with calculation
+						matched = true;
+						System.out.println("The parentheses now matched.");
+						System.out.println("numbers: " + numbers.toString());
+						System.out.println("operators: " + operators.toString());
+					}
+					else { // the current pair of brackets is under calculation
+						if (NUMS.contains(currentNotation)) popped = numbers.pop();
+						System.out.println("operator popped: " + popped);
+						pASCII = (int) popped.charAt(0);
+						if ((pASCII < 40) || (pASCII > 41)) tempOps.add(popped);
+					}
+				}
+				String currentOp = tempOps.get(0); // guaranteed that there is at least 1 operator
+				int first = numbers.peek(); // get the first number in the number stack
+				numbers.pop();
+				int second = numbers.peek(); // initialize the second number in the number stack
+				while (!tempOps.isEmpty()) {
+					subResult = compute(second, first, currentOp);
+					System.out.println("subResult: " + subResult);
+					result += subResult;
+					System.out.println("result: " + result);
+					numbers.pop();
+					tempOps.remove(0);
+					System.out.println("numbers: " + numbers.toString());
+					System.out.println("tempOps: " + tempOps.toString());
+					System.out.println("\n");
+				}
+				break;
+			case SP:
+				System.out.println("The current entry is a space, and we have skipped this.");
+				continue;
 			}
-
 			/*
-			// TODO: catch the EmptyStackException
+			int first = 0;
+			int second = 0;
+			ArrayList<Integer> tempNums = new ArrayList<>();
+			pASCII = (int)popped.charAt(0);
+			if ((pASCII < 40) || (pASCII > 41)) { // being a non-parenthesis operator
+				System.out.println("We push the notation to the tempOps list for calculation.");
+				tempOps.add(popped);
+			}
+			else System.out.println("The notation is either an open parenthesis or a closing one."); // being a parenthesis
+			if (matched) {
+				System.out.println("pASCII: " + pASCII);
+			}
+			*/
+			/*
 			currentPriority = getPriority(index);
 			if (currentPriority == HIGH) {
 				if (currentNotation.equals(LTP) { continue; } // keep reading while donno if still need this
@@ -196,6 +253,7 @@ public class ArithmeticEvaluator { // add generic
 	*/
 	public String toString() {
 		//2
+
 		return "";
 	}
 
