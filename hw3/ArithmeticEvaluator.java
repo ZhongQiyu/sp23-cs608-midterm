@@ -1,4 +1,5 @@
 import java.util.Stack;
+import java.util.Arrays;
 import java.util.ArrayList;
 
 /*
@@ -34,15 +35,23 @@ public class ArithmeticEvaluator { // add generic
 
 	private Stack<String> getOperators() { return operators; }
 
+	private void setNumbers(Stack<Integer> numbers) { this.numbers = numbers; }
+
+	private void setOperators(Stack<String> operators) { this.operators = operators; }
+
 	public ArithmeticEvaluator() {
 		numbers = new Stack<>();
 		operators = new Stack<>();
 	}
 
+
 	public ArithmeticEvaluator(String expr) {
 		// call distribute() to initialize numbers and operators
 	}
 
+	/*
+	Compute the priority of different operators.
+	*/	
 	private int getPriority(String op) {
 		int priority = 0;
 		switch (op) {
@@ -59,6 +68,37 @@ public class ArithmeticEvaluator { // add generic
 
 		}
 		return priority;
+		/*
+		currentPriority = getPriority(index);
+		if (currentPriority == HIGH) {
+			if (currentNotation.equals(LTP) { continue; } // keep reading while donno if still need this
+			else { 
+				double a = 0.0;
+				double b = 0.0;
+				double result = 0.0;
+				String op = "";
+				boolean parsed = false;
+				String localExpr = "";
+				while (!parsed) {
+					if ((localExpr.contains(LTP)) && (localExpr.contains(RTP))) { parsed = true; }
+					else {
+						a = 
+						localExpr.insert(operators.pop(0), 0);
+					}
+				}
+				result = compute(result, compute())
+				} // currentNotation.equals(RTP))
+		else {
+			if (currentNotation.equals(MUL) || currentNotation.equals(DIV))
+			op = operators.pop();
+			a = numbers.pop();
+			b = numbers.pop();
+			if (op.equals(RTP)) { 
+				op = current
+				result = numbers; }
+			else { result = compute(a, b, op); }
+		}
+		*/
 	}
 
 	/*
@@ -71,6 +111,10 @@ public class ArithmeticEvaluator { // add generic
 		return pValue1 <= pValue2 ? -1:1;
 	}
 
+	/*
+	Compute the result of a given type of operation and
+	two numbers involved in the operations.
+	*/
 	private double compute(double a, double b, String op) {
 		double result = 0.0;
 		switch (op) {
@@ -79,7 +123,7 @@ public class ArithmeticEvaluator { // add generic
 			result = a + b;
 			break;
 		case SUB:
-			System.out.println("We are subtract a from b:");
+			System.out.println("We are subtracting a from b:");
 			result = a - b;
 			break;
 		case MUL:
@@ -92,20 +136,6 @@ public class ArithmeticEvaluator { // add generic
 			break;
 		}
 		return result;
-	}
-
-	private void distribute(String expression) {
-		Stack<Integer> numbers = this.getNumbers();
-		Stack<String> operators = this.getOperators();
-	}
-
-	/*
-	Trim the original expression so that there is no space
-	between any of the operators within the expression.
-	*/
-	private String trim(String expression) {
-		String trimmed = "";
-		return "";
 	}
 
 	/*
@@ -127,14 +157,16 @@ public class ArithmeticEvaluator { // add generic
 	public String evaluate(String expression) {
 		Stack<Integer> numbers = this.getNumbers();
 		Stack<String> operators = this.getOperators();
-		ArrayList<String> tempOps = new ArrayList<>(); // the space to store the popped operators
+		ArrayList<String> tempOps = new ArrayList<>(); // to store the popped operators; may be able to get simplified
+		ArrayList<String> temp = new ArrayList<>(); // to store the numbers and the operators involved in the current pair of parentheses
 		int count = expression.length();
-		double result = 0.0;
+		ArrayList<Integer> subResults = new ArrayList<>();
 		String currentNotation = ""; // generically store every single item to be passed in
 		int currentPriority = 0; // for distinguishing the order of using different computational operators (+, -, *, /)
 		int index;
 		for (index = 0; index < count; index++) {
 			currentNotation = String.valueOf(expression.charAt(index));
+			if (!currentNotation.equals(SP)) temp.add(currentNotation);
 			switch (currentNotation) {
 			case "0":
 			case "1":
@@ -162,88 +194,67 @@ public class ArithmeticEvaluator { // add generic
 				operators.push(RTP);
 				boolean matched = false;
 				double subResult = 0.0;
-				String popped = "";
+				String popped = currentNotation; // in this case, RTP also works
 				int pASCII = 0;
+				/*
+				System.out.println("numbers: " + numbers.toString());
+				System.out.println("operators: " + operators.toString());
+				*/
 				while (!matched) {
+					pASCII = (int)popped.charAt(0);
+					System.out.println("pASCII: " + pASCII);
 					if (popped.equals(LTP)) { // the current pair of brackets is done with calculation
 						matched = true;
 						System.out.println("The parentheses now matched.");
-						System.out.println("numbers: " + numbers.toString());
-						System.out.println("operators: " + operators.toString());
 					}
 					else { // the current pair of brackets is under calculation
-						if (NUMS.contains(currentNotation)) popped = numbers.pop();
-						System.out.println("operator popped: " + popped);
-						pASCII = (int) popped.charAt(0);
-						if ((pASCII < 40) || (pASCII > 41)) tempOps.add(popped);
-					}
+						if ((pASCII >= 48) && (pASCII <= 57)) { // being a number
+							popped = Integer.toString(numbers.pop());
+							System.out.println("number popped: " + popped);
+						}
+						else { // being an operator
+							popped = operators.pop();
+							System.out.println("operator popped: " + popped);
+						}
+						if ((pASCII < 40) || (pASCII > 41)) tempOps.add(popped); // include the real operators
+					}	
 				}
+				System.out.println("numbers: " + numbers.toString());
+				System.out.println("operators: " + operators.toString());
+				System.out.println("temp: " + temp.toString());
+				/*
+				int first = 0;
+				int second = 0;
+				ArrayList<Integer> tempNums = new ArrayList<>();
 				String currentOp = tempOps.get(0); // guaranteed that there is at least 1 operator
+				if ((pASCII < 40) || (pASCII > 41)) { // being a non-parenthesis operator
+					System.out.println("We push the notation to the tempOps list for calculation.");
+					tempOps.add(popped);
+				}
+				else System.out.println("The notation is either an open parenthesis or a closing one."); // being a parenthesis
+				if (matched) {
+					System.out.println("pASCII: " + pASCII);
+				}
+				*/
+				/*
 				int first = numbers.peek(); // get the first number in the number stack
-				numbers.pop();
 				int second = numbers.peek(); // initialize the second number in the number stack
 				while (!tempOps.isEmpty()) {
 					subResult = compute(second, first, currentOp);
 					System.out.println("subResult: " + subResult);
-					result += subResult;
-					System.out.println("result: " + result);
-					numbers.pop();
+					subResults.add((int)subResult);
+					System.out.println("subResults: " + subResults.toString());
 					tempOps.remove(0);
 					System.out.println("numbers: " + numbers.toString());
 					System.out.println("tempOps: " + tempOps.toString());
 					System.out.println("\n");
 				}
+				*/
 				break;
 			case SP:
-				System.out.println("The current entry is a space, and we have skipped this.");
+				//System.out.println("The current entry is a space, and we have skipped this.");
 				continue;
 			}
-			/*
-			int first = 0;
-			int second = 0;
-			ArrayList<Integer> tempNums = new ArrayList<>();
-			pASCII = (int)popped.charAt(0);
-			if ((pASCII < 40) || (pASCII > 41)) { // being a non-parenthesis operator
-				System.out.println("We push the notation to the tempOps list for calculation.");
-				tempOps.add(popped);
-			}
-			else System.out.println("The notation is either an open parenthesis or a closing one."); // being a parenthesis
-			if (matched) {
-				System.out.println("pASCII: " + pASCII);
-			}
-			*/
-			/*
-			currentPriority = getPriority(index);
-			if (currentPriority == HIGH) {
-				if (currentNotation.equals(LTP) { continue; } // keep reading while donno if still need this
-				else { 
-					double a = 0.0;
-					double b = 0.0;
-					double result = 0.0;
-					String op = "";
-					boolean parsed = false;
-					String localExpr = "";
-					while (!parsed) {
-						if ((localExpr.contains(LTP)) && (localExpr.contains(RTP))) { parsed = true; }
-						else {
-							a = 
-							localExpr.insert(operators.pop(0), 0);
-						}
-					}
-					result = compute(result, compute())
-					} // currentNotation.equals(RTP))
-			else {
-
-				if (currentNotation.equals(MUL) || currentNotation.equals(DIV))
-				op = operators.pop();
-				a = numbers.pop();
-				b = numbers.pop();
-				if (op.equals(RTP)) { 
-					op = current
-					result = numbers; }
-				else { result = compute(a, b, op); }
-			}
-			*/
 		}
 		return "";
 	}
@@ -257,6 +268,24 @@ public class ArithmeticEvaluator { // add generic
 		return "";
 	}
 
+	/*
+	Trim the original expression so that there is no space
+	between any of the operators within the expression.
+	*/
+	private String trim(String expression) {
+		String trimmed = "";
+		return "";
+	}
+
+	/*
+	Distribute a given expression into numbers and operators.
+	*/
+	private void distribute(String expression) {
+		Stack<Integer> numbers = this.getNumbers();
+		Stack<String> operators = this.getOperators();
+	}
+
+	/* The driver function. */
 	public static void main(String[] args) {
 		// test the constructor
 		ArithmeticEvaluator evaluator = new ArithmeticEvaluator();
