@@ -129,3 +129,57 @@ public class Stack<T> {
 	}
 	*/
 }
+
+"""
+Midterm projects are due at March 21 
+You will be presenting on March 21 your group projects.
+
+https://docs.google.com/spreadsheets/d/1ZTNmO6BNI7xEpw0eh7F92M37m_ONOh1iEtd4p28RNKo/edit?usp=sharing
+
+Project Presentation Guidelines
+Collaboration is a creative process that brings ideas to life through the development of software, hardware, or projects.
+In this task, you will design and implement a project that uses algorithms and might solve a problem, enable innovation,
+explore personal interests, or express creativity. Your submission must include the elements listed in the submission requirements section below.
+You are allowed to collaborate with your partner(s) on the development of the project, the written response f(or the final only),
+and the video that you submit for this project can be completed collaboratively or individually, with or without any collaboration with your partner(s).
+
+General Requirements 
+You will complete and submit the following: 
+• Final program code that runs (created independently or collaboratively) 
+• A video that displays the running of your program and demonstrates functionality you developed 
+• Written paper
+• Ppt presentation 
+ 
+Submission Requirements 
+1. PROGRAM CODE (CREATED INDEPENDENTLY OR COLLABORATIVELY) Submit a folder in zip format or one PDF file that contains all of your program code (including comments).
+Include comments or acknowledgments for any part of the submitted program code that has been written by someone other than you and/or your collaborative partner(s).
+The program must run.
+
+2. VIDEDO
+Submit one video in .mp4, .wmv, .avi, or .mov format that demonstrates the running of at least the significant features of your program.
+Your video must not exceed 5 minutes in length.
+Provide an audio narration in your video that:
+• identifies the programming language;
+• identifies the purpose and the functionality of your program/project; and
+• explains what the video illustrates.
+
+3. WRITTEN PAPER for final project only not for midterm
+You will write a paper of no more than 2 single-column, 1.5-spaced, 12pt font pages.
+Provide information on the project and on your presentation. Name the project that is represented by your presentation.
+Describe the projects intended purpose and functionality. Describe how your presentation illustrates, represents, or
+explains the project’s intended purpose, its function, or its effect.
+Describe your development process, explicitly identifying the computing tools and techniques you used to create your presentation.
+Your description must be detailed enough so that a person unfamiliar with those tools and techniques will understand your process. 
+Explain at least one beneficial effect and at least one harmful effect the project has had, or has the potential to have, on society,
+economy, or culture.
+Using specific details, describe:
+- the data your project uses;
+- how the project consumes (as input), produces (as output),
+- and/or transforms data; and
+- at least one data storage concern, data privacy concern, or data security concern directly related to the project.
+
+4) POWERPOINT PRESENTATION
+References: Provide a list of at least three online or print sources used to create your presentation.
+"""
+
+// testing
