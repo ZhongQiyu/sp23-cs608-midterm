@@ -1,5 +1,3 @@
-package project;
-
 /*
 A Java class that implements the binary search tree
 so that an RPN expression would be able to get stored
@@ -10,22 +8,6 @@ floating-point numbers to get involved when compute.
 Ref: https://www.javatpoint.com/binary-tree-java
 */
 public class BinarySearchTree<T> {
-    
-    /*
-    The default class of Node that needs to be
-    used to represent the node of binary tree.
-    */
-    public class Node{
-        T data;
-        Node left;
-        Node right;
-        public Node(T data){
-            //Assign data to the new node, set left and right children to null
-            this.data = data;
-            this.left = null;
-            this.right = null;
-            }
-        }
     
     //Represent the root of binary tree
     public Node root;
