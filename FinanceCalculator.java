@@ -157,18 +157,7 @@ public class FinanceCalculator { // add generic
 	private static final char XOR = '^';
 	private static final char SP = ' ';	
 	private static final ArrayList<Character> NUMS = new ArrayList<Character>(Arrays.asList('0','1','2','3','4','5','6','7','8','9'));
-	private static final Hashtable<String, Double> CRCY = new Hashtable<String, Double>() {{
-        put("CNY",1.0000);
-        put("USD",6.9230);
-        put("INR",0.0840);
-        put("UKP",8.7100);
-        put("EUR",7.5800);
-        put("JPY",0.0510);
-        put("CAD",5.1700);
-        put("AUD",4.6700);
-        put("HKD",0.8800);
-        put("TRY",0.3500);
-    }};
+	
     private String expression; // need to use this
 
 	/* Default constructor of an calculator. */
@@ -189,18 +178,25 @@ public class FinanceCalculator { // add generic
 	*/
 	public static double currencyConversion(String[] convArgs) {
 		// clean the user input
-        String from = convArgs[0];
-        String to = convArgs[1];
         double amount = Double.parseDouble(convArgs[convArgs.length-1]);
         // make the conversion
-		String output = " ";
-		double fromRate = CRCY.get(from);
-		double toRate = CRCY.get(to);
-		double total = fromRate / toRate * amount;
-		// #.00 表示两位小数
-		DecimalFormat df = new DecimalFormat("#0.00"); // 保留两位小数，四舍五入
-		System.out.println("We are converting " + df.format(amount) + " " + from + " to " + to + ".\nThis gives us a total of " + df.format(total) + " " + to + ".\n");
-		return total;
+	OkHttpClient client = new OkHttpClient().newBuilder().build();
+	    Request request = new Request.Builder()
+	      .url("https://api.apilayer.com/fixer/latest?symbols=" + to + "&base=" + from)
+	      .addHeader("apikey", "h4vvQqoB1stw615J4tDGlDrEoiTfPs9V")
+	      .method("GET", null)
+	      .build();
+    	Response response = client.newCall(request).execute();
+	String jsonData = response.body().string();
+    	JSONObject Jobject = new JSONObject(jsonData);
+    	System.out.println(Jobject.getJSONObject("rates"));
+    	double rate=Jobject.getJSONObject("rates").getDouble(to);
+	    
+	double total = rate * amount;
+	// #.00 表示两位小数
+	DecimalFormat df = new DecimalFormat("#0.00"); // 保留两位小数，四舍五入
+	System.out.println("We are converting " + df.format(amount) + " " + from + " to " + to + ".\nThis gives us a total of " + df.format(total) + " " + to + ".\n");
+	return total;
 	}
 
 	/*
