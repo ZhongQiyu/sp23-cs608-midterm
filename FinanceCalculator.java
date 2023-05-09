@@ -183,6 +183,51 @@ public class FinanceCalculator { // add generic
 	}
 
 	/*
+	Convert a given amount of money from a type
+	of currency to another. The rate is based
+	with in-time gleaning of data on the website.
+	*/
+	public static double currencyConversion(String[] convArgs) {
+		// clean the user input
+        String from = convArgs[0];
+        String to = convArgs[1];
+        double amount = Double.parseDouble(convArgs[convArgs.length-1]);
+        // make the conversion
+		String output = " ";
+		double fromRate = CRCY.get(from);
+		double toRate = CRCY.get(to);
+		double total = fromRate / toRate * amount;
+		// #.00 表示两位小数
+		DecimalFormat df = new DecimalFormat("#0.00"); // 保留两位小数，四舍五入
+		System.out.println("We are converting " + df.format(amount) + " " + from + " to " + to + ".\nThis gives us a total of " + df.format(total) + " " + to + ".\n");
+		return total;
+	}
+
+	/*
+	Compute the amount that the credit card balance
+	would need to return amounts from the user. It
+	gives an estimation of the total amount of time
+	where the pay-back would be complete.
+	*/
+	public static double creditCardPayoff(float balance, float ir, String[] paymentArgs) {
+		// Calculator
+		return 0.0;
+	}
+	
+	/*
+	Calculate the monthly payment that would needed to be made
+	given a set of parameters, being the loan amount, the rate
+	annually for return-interest, and the count of loan terms.
+	*/
+	public static double calculateMonthlyPayment(double loanAmount, double annualInterestRate, int loanTerm) {
+        double monthlyInterestRate = annualInterestRate / 12 / 100;
+        int numberOfPayments = loanTerm * 12;
+        double discountFactor = (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1)
+                / (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments));
+        return loanAmount / discountFactor;
+    }
+
+	/*
 	Compute the priority of different operators.
 	*/	
 	private int getPriority(char op) {
@@ -209,9 +254,9 @@ public class FinanceCalculator { // add generic
 	*/
 	private int compareTo(char op1, char op2) {
 		int pValue1 = getPriority(op1);
-		System.out.println("The first character " + String.valueOf(op1) + " comes to be with a priority of " + Integer.toString(pValue1) + ".");
+		//System.out.println("The first character " + String.valueOf(op1) + " comes to be with a priority of " + Integer.toString(pValue1) + ".");
 		int pValue2 = getPriority(op2);
-		System.out.println("The second character " + String.valueOf(op2) + " comes to be with a priority of " + Integer.toString(pValue2) + ".");
+		//System.out.println("The second character " + String.valueOf(op2) + " comes to be with a priority of " + Integer.toString(pValue2) + ".");
 		return pValue1 < pValue2 ? 1:-1;
 	}
 
@@ -223,19 +268,19 @@ public class FinanceCalculator { // add generic
 		double result = 0.0;
 		switch (op) {
 		case ADD:
-			System.out.println("We are adding a and b: " + a + "+" + b + ".");
+			System.out.println("We are adding " + a + " and " + b + ".");
 			result = a + b;
 			break;
 		case SUB:
-			System.out.println("We are subtracting a from b: " + a + "-" + b + ".");
+			System.out.println("We are subtracting " + a + " from " + b + ".");
 			result = a - b;
 			break;
 		case MUL:
-			System.out.println("We are multiplying a and b: " + a + "*" + b + ".");
+			System.out.println("We are multiplying " + a + " with " + b + ".");
 			result = a * b;
 			break;
 		case DIV:
-			System.out.println("We are dividng a by b: " + a + "/" + b + ".");
+			System.out.println("We are dividng " + a + " by " + b + ".");
 			result = a / b;
 			break;
 		}
@@ -250,6 +295,15 @@ public class FinanceCalculator { // add generic
 	private boolean isValid(String expression) {
 		// TODO: catch the EmptyStackException
 		return true;
+	}
+
+	/*
+	Trim the original expression so that there is no space
+	between any of the operators within the expression.
+	*/
+	private String trim(String expression) {
+		String trimmed = "";
+		return "";
 	}
 
 	/*
@@ -296,7 +350,7 @@ public class FinanceCalculator { // add generic
 				}
 				if (cmpRst == -1) { // if the current operator's priority is larger than or equal to that of the stack's top
 					results.add(operators.pop());
-					System.out.println("The current character is not as prioritized as the operators do.");
+					//System.out.println("The current character is not as prioritized as the operators do.");
 				}
 				//然后将该操作符压入堆栈中。
 				operators.push(current);
@@ -304,13 +358,13 @@ public class FinanceCalculator { // add generic
 				break;
 			case LTP:
 				//如果它是一个左括号，则将其压入堆栈中。
-				System.out.println("LTP recognized.");
+				//System.out.println("LTP recognized.");
 				operators.push(current);
-				System.out.println("LTP stored.");
+				//System.out.println("LTP stored.");
 				break;
 			case RTP:
 				//如果它是一个右括号，则弹出堆栈中的操作符，并将它们输出到结果列表中，直到遇到左括号为止。
-				System.out.println("RTP recognized.");
+				//System.out.println("RTP recognized.");
 				char currOp = operators.peek();
 				while (currOp != LTP) {
 					results.add(operators.pop());
@@ -318,11 +372,11 @@ public class FinanceCalculator { // add generic
 				}
 				if (currOp == LTP) {
 					operators.pop(); //左括号只弹出，不输出到结果列表中。
-					System.out.println("LTP popped.");
+					//System.out.println("LTP popped.");
 				}
 				break;
 			case SP:
-				System.out.println("The current character is a space.");
+				//System.out.println("The current character is a space.");
 			}
 			//重复步骤 2-5 直到扫描完整个算式。
 			System.out.println("The current operator stack is " + operators.toString() + ".");
@@ -372,7 +426,7 @@ public class FinanceCalculator { // add generic
 		// Omega(n^2)
 		for (index = 0; index < count; index++) {
 			currentNotation = rpn.charAt(index);
-			System.out.println("The current notation is: " + currentNotation + ".");
+			//System.out.println("The current notation is: " + currentNotation + ".");
 			switch (currentNotation) {
 			case '0':
 			case '1':
@@ -387,8 +441,9 @@ public class FinanceCalculator { // add generic
 				//a. 如果当前元素是操作数（数字），则创建一个新的二叉树节点，将其值设置为该操作数，并将节点压入栈中。
 				Node<Character> newNode = new Node<>(currentNotation);
 				operators.push(newNode); // call Integer.valueOf() later in the computation operations
-				System.out.println("A node of a BST is created: " + newNode.toString());
+				//System.out.println("A node of a BST is created: " + newNode.toString());
 				System.out.println("We push the number " + currentNotation + " into the number stack.");
+				//handle negative numbers
 				break;
 			case ADD:
 			case SUB:
@@ -401,13 +456,13 @@ public class FinanceCalculator { // add generic
 				Node<Character> opNode = new Node<>(currentNotation);
 				opNode.setLeft(left);
 				opNode.setRight(right);
-				System.out.println("We set up a new node whose data is the operator, with children being the two popped nodes.");
+				//System.out.println("We set up a new node whose data is the operator, with children being the two popped nodes.");
 				//然后将新创建的节点压入栈中。
 				operators.push(opNode); // Stack<Node>? change the data type
 				System.out.println("We push the operator " + currentNotation + " into the operator stack.");
 				break;
 			case SP:
-				System.out.println("The current entry is a space, and we have skipped this.\n");
+				//System.out.println("The current entry is a space, and we have skipped this.\n");
 				continue;
 			}
 			System.out.println("The current stack is: " + operators.toString() + ".\n");
@@ -439,57 +494,28 @@ public class FinanceCalculator { // add generic
 	}
 
 	/*
-	Compute the 
+	Compute the exact value given an arithmetic expression.
 	*/
 	public double compute(String expression) {
+		System.out.println("Step 1: getRPN");
 		ArrayList<Character> RPNExpression = this.getRPN(expression);
+		System.out.println("RPNExpression: " + RPNExpression + "\n");
+
+		System.out.println("Step 2: toRealRPN");
 		String rpn = this.toRealRPN(RPNExpression);
+		System.out.println("rpn: " + rpn + "\n");
+
+		System.out.println("Step 3: evaluate the RPN as a BST");
 		Stack<Object> tree = this.evaluate(rpn);
+		System.out.println("tree: " + tree + "\n");
+
+		System.out.println("Step 4: take DFS through the BST");
 		Node<Object> evaluated = (Node<Object>) tree.pop();
-		return DFS(evaluated);
+		double result = DFS(evaluated);
+		DecimalFormat df = new DecimalFormat("#0.00");
+		System.out.println("result: " + df.format(result) + "\n");
+		return result;
 	}
-
-	/*
-	Convert a given amount of money from a type
-	of currency to another. The rate is based
-	with in-time gleaning of data on the website.
-	*/
-	public static double currencyConversion(String[] convArgs) {
-		// clean the user input
-        String from = convArgs[0];
-        String to = convArgs[1];
-        double amount = Double.parseDouble(convArgs[convArgs.length-1]);
-        // make the conversion
-		String output = " ";
-		double fromRate = CRCY.get(from);
-		double toRate = CRCY.get(to);
-		double total = fromRate / toRate * amount;
-		// #.00 表示两位小数
-		DecimalFormat df = new DecimalFormat("#0.00"); // 保留两位小数，四舍五入
-		System.out.println("We are converting " + df.format(amount) + " " + from + " to " + to + ".\nThis gives us a total of " + df.format(total) + " " + to + ".\n");
-		return total;
-	}
-
-	/*
-	Compute the amount that the credit card balance
-	would need to return amounts from the user. It
-	gives an estimation of the total amount of time
-	where the pay-back would be complete.
-	*/
-	public static double creditCardPayoff(float balance, float ir, String[] paymentArgs) {
-		// Calculator
-		return 0.0;
-	}
-	
-	/*
-	
-	public static double calculateMonthlyPayment(double loanAmount, double annualInterestRate, int loanTerm) {
-        double monthlyInterestRate = annualInterestRate / 12 / 100;
-        int numberOfPayments = loanTerm * 12;
-        double discountFactor = (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1)
-                / (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments));
-        return loanAmount / discountFactor;
-    }
 
 	/*
 	Display the information that is stored in the calculator.
@@ -500,30 +526,20 @@ public class FinanceCalculator { // add generic
 		return "";
 	}
 
-	/*
-	Trim the original expression so that there is no space
-	between any of the operators within the expression.
-	*/
-	private String trim(String expression) {
-		String trimmed = "";
-		return "";
-	}
-
 	/* The driver function. */
 	public static void main(String[] args) {
-
 		// parse the arguments
 		// - if the option is 1, then the regular mode would start i.e. the algebraic calculator
 		// - if the option is 2, then the flexible mode would start i.e. the currency from A to B
 		// - if the option is 3, then the advanced mode would start i.e. the calc + scientific computing
-		System.out.println("args: " + Arrays.toString(args));
+		
+		// System.out.println("args: " + Arrays.toString(args));
 		// String option = args[0];
 
 		// test the static variable
 		System.out.println("CRCY: " + CRCY + ".\n");
 
-		// test the currencyConversion method
-		// ("CNY","JPY",100); ("USD","INR",200); ("CNY","EUR",5)
+		// test the currencyConversion method: ("CNY","JPY",100); ("USD","INR",200); ("CNY","EUR",5)
 		Scanner sc = new Scanner(System.in);
 		String[] convArgs = new String[CONV_ARGS_CT];
 		String userCommand = " ";
@@ -532,20 +548,35 @@ public class FinanceCalculator { // add generic
 			System.out.println("Y/N? Y for a test, N for the exit.");
 			userCommand = sc.nextLine();
 			if (userCommand.equalsIgnoreCase("N")) break;
-			//try {
 			System.out.println("Arguments (from, to, amount): ");
 			convArgs = sc.nextLine().split(" ");
 			FinanceCalculator.currencyConversion(convArgs);
-			//}
-			//catch (ArrayIndexOutOfBoundsException e) {
-			//	break;
-			//}
 		}
 		sc.close();
 		System.out.println("Test Finished.\n");
 		
 		// test the constructor of the FinanceCalculator
 		FinanceCalculator calculator = new FinanceCalculator();
+
+		// test the getPriority method
+		System.out.println("The priority of * is " + calculator.getPriority(MUL) + ".");
+		System.out.println("The priority of + is " + calculator.getPriority(ADD) + ".");
+		System.out.println("The priority of ( is " + calculator.getPriority(LTP) + ".\n");
+		//System.out.println("The priority of ^ is " + calculator.getPriority("^") + ".\n");
+
+		// test the compareTo method
+		System.out.println("The comparison between + and * gives us the difference of priority to be " + calculator.compareTo('+','*') + ".");
+		System.out.println("The comparison between * and ( gives us the difference of priority to be " + calculator.compareTo('*','(') + ".\n");
+		//System.out.println("The comparison between ^ and + gives us the difference of priority to be " + calculator.compareTo("*","("));
+
+		// test the (sub) compute method
+		double result = calculator.compute(1.0,2.0,ADD);
+		DecimalFormat df = new DecimalFormat("#0.00");
+		System.out.println("1.0 + 2.0 = " + df.format(result));
+		result = calculator.compute(3.0,4.0,DIV);
+		System.out.println("3.0 + 4.0 = " + df.format(result) + "\n");
+
+		// test the isValid method
 
 		// test the getRPN method
 		// ArrayList<Character> rpn = calculator.getRPN(expr);
@@ -565,10 +596,16 @@ public class FinanceCalculator { // add generic
 		//calculator.evaluate(expr);
 
 		// test the (main) compute method
+		// expr-1
 		String expr = "(6 + 3 * (5 - 2)) / 4";
-		double result = calculator.compute(expr);
-		System.out.println("result: " + result);
-
+		System.out.println("expr: " + expr + "\n");
+		result = calculator.compute(expr);
+		System.out.println("------------------------\n");
+		// expr-2
+		expr = "((((((((3) + 1) * 2) - 6) / 5) * 8) - 7) + 4)";
+		System.out.println("expr: " + expr + "\n");
+		result = calculator.compute(expr);
+		//System.out.println("result: " + df.format(result) + ".");
 	}
 
 }
