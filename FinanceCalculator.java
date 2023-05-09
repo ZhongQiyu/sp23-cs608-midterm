@@ -1,7 +1,9 @@
 import java.util.Stack;
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.text.DecimalFormat;
 
 /*
 import okhttp3.OkHttpClient;
@@ -139,6 +141,7 @@ public class FinanceCalculator { // add generic
 	}
 
 	/* The space for static variables. */
+	private static final int CONV_ARGS_CT = 3;
 	private static final int HIGH = 3;
 	private static final int MEDIUM = 2;
 	private static final int LOW = 1;
@@ -436,7 +439,7 @@ public class FinanceCalculator { // add generic
 	}
 
 	/*
-	Compute 
+	Compute the 
 	*/
 	public double compute(String expression) {
 		ArrayList<Character> RPNExpression = this.getRPN(expression);
@@ -451,13 +454,19 @@ public class FinanceCalculator { // add generic
 	of currency to another. The rate is based
 	with in-time gleaning of data on the website.
 	*/
-	public static double currencyConversion(String from, String to, double amount) {
-		// glean the current currency for a set of currency
+	public static double currencyConversion(String[] convArgs) {
+		// clean the user input
+        String from = convArgs[0];
+        String to = convArgs[1];
+        double amount = Double.parseDouble(convArgs[convArgs.length-1]);
+        // make the conversion
 		String output = " ";
 		double fromRate = CRCY.get(from);
 		double toRate = CRCY.get(to);
 		double total = fromRate / toRate * amount;
-		System.out.println("We are converting " + amount + " " + from + " to " + to + ".\nThis gives us a total of " + total + ".\n");
+		// #.00 表示两位小数
+		DecimalFormat df = new DecimalFormat("#0.00"); // 保留两位小数，四舍五入
+		System.out.println("We are converting " + df.format(amount) + " " + from + " to " + to + ".\nThis gives us a total of " + df.format(total) + " " + to + ".\n");
 		return total;
 	}
 
@@ -503,13 +512,39 @@ public class FinanceCalculator { // add generic
 	/* The driver function. */
 	public static void main(String[] args) {
 
+		// parse the arguments
+		// - if the option is 1, then the regular mode would start i.e. the algebraic calculator
+		// - if the option is 2, then the flexible mode would start i.e. the currency from A to B
+		// - if the option is 3, then the advanced mode would start i.e. the calc + scientific computing
+		System.out.println("args: " + Arrays.toString(args));
+		// String option = args[0];
+
 		// test the static variable
 		System.out.println("CRCY: " + CRCY + ".\n");
 
 		// test the currencyConversion method
-		FinanceCalculator.currencyConversion("USD","INR",100);
-
-		// test the constructor
+		// ("CNY","JPY",100); ("USD","INR",200); ("CNY","EUR",5)
+		Scanner sc = new Scanner(System.in);
+		String[] convArgs = new String[CONV_ARGS_CT];
+		String userCommand = " ";
+		System.out.println("Test Started.\n");
+		while (!userCommand.equalsIgnoreCase("N")) {
+			System.out.println("Y/N? Y for a test, N for the exit.");
+			userCommand = sc.nextLine();
+			if (userCommand.equalsIgnoreCase("N")) break;
+			//try {
+			System.out.println("Arguments (from, to, amount): ");
+			convArgs = sc.nextLine().split(" ");
+			FinanceCalculator.currencyConversion(convArgs);
+			//}
+			//catch (ArrayIndexOutOfBoundsException e) {
+			//	break;
+			//}
+		}
+		sc.close();
+		System.out.println("Test Finished.\n");
+		
+		// test the constructor of the FinanceCalculator
 		FinanceCalculator calculator = new FinanceCalculator();
 
 		// test the getRPN method
