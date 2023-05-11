@@ -1,3 +1,4 @@
+import java.lang.Math;
 import java.util.Stack;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -525,6 +526,46 @@ public class FinanceCalculator { // add generic
 	}
 
 	/*
+	Compute the algebraic mean for a given
+	sequence of data.
+	*/
+	private static double mean(double[] data) {
+		double mu = 0.0;
+		int count = data.length;
+		for (double d: data) mu += d/count;
+		return mu;
+	}
+
+	/*
+	Assuming that we are using the denominator
+	with the total count of the data points.
+	*/
+	private static double variance(double[] data) {
+		double sigma = 0.0;
+		double mu = mean(data);
+		int count = data.length;
+		for (double d: data) variance += Math.pow(d - mu, 2)/count;
+		return variance
+	}
+
+	/*
+	Compute the mean and the variance of a given set
+	of data inputs.
+	*/
+	public static double[] regressionAnalysis(String[] anaArgs) {
+		int count = anaArgs.length;
+		int index;
+		double[] data = new double[count];
+		for (index = 0; index < count; index++) {
+			data[index] = (double) anaArgs[index];
+		}
+		double[] results = new double[2]; // 0 for mean, 1 for variance
+		results[0] = mean(data);
+		results[1] = variance(data);
+		return results;
+	}
+
+	/*
 	Compute the amount that the credit card balance
 	would need to return amounts from the user. It
 	gives an estimation of the total amount of time
@@ -561,7 +602,7 @@ public class FinanceCalculator { // add generic
 		return baseInfo + menuInfo;
 	}
 
-	/* --FOR TESTS START-- */
+	/* --FOR TESTS OF NODE START-- */
 
 	/* Generate a node. */
 	public Node<Object> genNode(Object data) { return new Node<Object>(data); }
@@ -576,19 +617,37 @@ public class FinanceCalculator { // add generic
 		return rootNode;
 	}
 
-	/* --FOR TESTS END-- */
+	/* --FOR TESTS OF NODE END-- */
 
 	public void testCurrencyConversion() {
 		// add logic to handle the difference
 		Scanner sc = new Scanner(System.in);
 		String[] convArgs = new String[CONV_ARGS_CT];
 		String userCommand = " ";
-		System.out.println("Test Started.\n");
+		System.out.println("Test Started.");
 		while (!userCommand.equalsIgnoreCase("N")) {
-			System.out.println("Y/N? Y for a test, N for the exit.");
+			System.out.print("Y/N? Y for a test, N for the exit. ");
 			userCommand = sc.nextLine();
 			if (userCommand.equalsIgnoreCase("N")) break;
-			System.out.println("Arguments (from, to, amount): ");
+			System.out.print("Arguments (from, to, amount): ");
+			convArgs = sc.nextLine().split(" ");
+			FinanceCalculator.currencyConversion(convArgs);
+		}
+		sc.close();
+		System.out.println("Test Finished.\n"); // robustness
+	}
+
+	public void testRegressionAnalysis() {
+		// add logic to handle the difference
+		Scanner sc = new Scanner(System.in);
+		String[] anaArgs = new String[testSize];
+		String userCommand = " ";
+		System.out.println("Test Started.");
+		while (!userCommand.equalsIgnoreCase("N")) {
+			System.out.print("Y/N? Y for a test, N for the exit. ");
+			userCommand = sc.nextLine();
+			if (userCommand.equalsIgnoreCase("N")) break;
+			System.out.print("Arguments (from, to, amount): ");
 			convArgs = sc.nextLine().split(" ");
 			FinanceCalculator.currencyConversion(convArgs);
 		}
@@ -601,6 +660,7 @@ public class FinanceCalculator { // add generic
 
 		/* Tests for static variables */
 		System.out.println("Testing the static variables:");
+
 		// test the NUMS static variable in FinanceCalculator
 		System.out.println("NUMS: " + NUMS + ".\n");
 
@@ -621,8 +681,11 @@ public class FinanceCalculator { // add generic
 		// test the getRight and setRight method for the Node
 		System.out.println("new Node(1).getRight() (right==new Node(3)): " + calc.genChildren(1,3,"R") + "\n");
 
+
+
 		/* Tests for FinanceCalculator */
 		System.out.println("Test the methods for FinanceCalculator:");
+
 		// test the constructor of the FinanceCalculator class
 		calc = new FinanceCalculator();
 		System.out.println("calc:\n" + calc.toString());
@@ -688,45 +751,44 @@ public class FinanceCalculator { // add generic
 		evaluated = calc.evaluate(rpn);
 		System.out.println("evaluated: " + evaluated + "\n");
 
-		// test the String builder
-		// set up the String builder
-		// calculator.evaluate(expr);
-		
-		// calculator.evaluate(result);
-		// System.out.println();
-
 		// test the DFS method
 		// 1
+		expr = "(6 +3 *(5- 2))/ 4"; // uneven ver. of 1
+		RPNExpression = calc.getRPN(expr);
+		rpn = calc.toRealRPN(RPNExpression);
+		evaluated = calc.evaluate(rpn);
 		Node<Object> root = (Node<Object>) evaluated.pop();
-		result = calc.DFS(root);
+		double mainResult = calc.DFS(root);
+		System.out.println("result: " + df.format(result) + "\n");
+		// 2
+		expr = "((4 * (9 - 3)) / (2 + (7 - 1))) - (5 + 3)";
+		RPNExpression = calc.getRPN(expr);
+		rpn = calc.toRealRPN(RPNExpression);
+		evaluated = calc.evaluate(rpn);
+	 	root = (Node<Object>) evaluated.pop();
+		mainResult = calc.DFS(root);
 		System.out.println("result: " + df.format(result) + "\n");
 
 		// test the (main) compute method (getRPN + toRealRPN + evaluate + DFS)
 		// 1
 		expr = "(6 + 3 * (5 - 2)) / 4";
 		System.out.println("expr: " + expr + "\n");
-		result = calc.compute(expr);
+		mainResult = calc.compute(expr);
 		System.out.println("------------------------\n");
 		// 2
 		expr = "((((((((3) + 1) * 2) - 6) / 5) * 8) - 7) + 4)";
 		System.out.println("expr: " + expr + "\n");
-		result = calc.compute(expr);
+		mainResult = calc.compute(expr);
 		System.out.println("------------------------\n");
-		// 3
-		expr = "(6 +3 *(5- 2))/ 4"; // uneven ver. of 1
-		System.out.println("expr: " + expr + "\n");
-		result = calc.compute(expr);
-		System.out.println("------------------------");
-		// 4
 
 		// test the currencyConversion method
 		calc.testCurrencyConversion();
 
+		// test the regressionAnalysis method	
+		calc.testRegressionAnalysis()
+
 		// test the payment planning method\
 		// calc.testPaymentPlanning();
-
-		// test the regression analysis method	
-		// calc.testRegressionPlanning()
 
 	}
 
