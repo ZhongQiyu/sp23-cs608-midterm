@@ -350,7 +350,7 @@ public class FinanceCalculator { // add generic
 				break;
 			case RTP:
 				//如果它是一个右括号，则弹出堆栈中的操作符，并将它们输出到结果列表中，直到遇到左括号为止。
-				//System.out.println("RTP recognized.");
+				System.out.println("RTP recognized.");
 				char currOp = operators.peek();
 				while (currOp != LTP) {
 					results.add(operators.pop());
@@ -358,15 +358,15 @@ public class FinanceCalculator { // add generic
 				}
 				if (currOp == LTP) {
 					operators.pop(); //左括号只弹出，不输出到结果列表中。
-					//System.out.println("LTP popped.");
+					System.out.println("LTP popped.");
 				}
+				System.out.println("The current operator stack is " + operators.toString() + ".");
+				System.out.println("The current array of results is " + results.toString() + ".\n");
 				break;
 			case SP:
 				//System.out.println("The current character is a space.");
 			}
 			//重复步骤 2-5 直到扫描完整个算式。
-			System.out.println("The current operator stack is " + operators.toString() + ".");
-			System.out.println("The current array of results is " + results.toString() + ".\n");
 		}
 		//如果操作符堆栈中还有操作符，则依次弹出堆栈中的操作符，并将它们输出到结果列表中。
 		while (!operators.isEmpty()) {
@@ -446,12 +446,12 @@ public class FinanceCalculator { // add generic
 				//然后将新创建的节点压入栈中。
 				operators.push(opNode); // Stack<Node>? change the data type
 				//System.out.println("We push the operator " + currentNotation + " into the operator stack.");
+				System.out.println("The current stack is: " + operators.toString() + ".\n");
 				break;
 			case SP:
 				//System.out.println("The current entry is a space, and we have skipped this.\n");
 				continue;
 			}
-			System.out.println("The current stack is: " + operators.toString() + ".\n");
 		}
 		//3.当遍历完成后，栈顶元素将是二叉树的根节点。
 		return operators;
@@ -600,11 +600,14 @@ public class FinanceCalculator { // add generic
 	public static void main(String[] args) {
 
 		/* Tests for static variables */
+		System.out.println("Testing the static variables:");
+		// test the NUMS static variable in FinanceCalculator
+		System.out.println("NUMS: " + NUMS + ".\n");
+
 		// test the CRCY static variable in FinanceCalculator
 		System.out.println("CRCY: " + CRCY + ".\n");
 
 		/* Tests for Node */
-
 		// test the constructor and the setData methods of the Node
 		FinanceCalculator calc = new FinanceCalculator();
 		System.out.println("new Node(1): " + calc.genNode(1) + "\n");
@@ -619,7 +622,7 @@ public class FinanceCalculator { // add generic
 		System.out.println("new Node(1).getRight() (right==new Node(3)): " + calc.genChildren(1,3,"R") + "\n");
 
 		/* Tests for FinanceCalculator */
-
+		System.out.println("Test the methods for FinanceCalculator:");
 		// test the constructor of the FinanceCalculator class
 		calc = new FinanceCalculator();
 		System.out.println("calc:\n" + calc.toString());
@@ -628,11 +631,6 @@ public class FinanceCalculator { // add generic
 		String bracketSet = "(({}[]))";
 		System.out.println(FinanceCalculator.isBalanced(bracketSet));
 
-		// test the currencyConversion method
-		calc.testCurrencyConversion();
-
-		//	calc.testPaymentPlanning();
-
 		// test the getPriority method
 		System.out.println("The priority of * is " + calc.getPriority(MUL) + ".");
 		System.out.println("The priority of + is " + calc.getPriority(ADD) + ".");
@@ -640,16 +638,19 @@ public class FinanceCalculator { // add generic
 		//System.out.println("The priority of ^ is " + calculator.getPriority("^") + ".\n");
 
 		// test the compareTo method
-		System.out.println("The comparison between + and * gives us the difference of priority to be " + calc.compareTo('+','*') + ".");
+		System.out.println("The comparison between + and * gives us the difference of priority to be " + calc.compareTo('+','*') + ".\n");
 		System.out.println("The comparison between * and ( gives us the difference of priority to be " + calc.compareTo('*','(') + ".\n");
-		//System.out.println("The comparison between ^ and + gives us the difference of priority to be " + calculator.compareTo("*","("));
+		System.out.println("The comparison between ^ and + gives us the difference of priority to be " + calc.compareTo('(','+') + ".\n");
 
 		// test the (sub) compute method
 		double result = calc.compute(1.0,2.0,ADD);
 		DecimalFormat df = new DecimalFormat("#0.00");
-		System.out.println("1.0 + 2.0 = " + df.format(result));
+		System.out.println("1.0 + 2.0 = " + df.format(result) + "\n");
 		result = calc.compute(3.0,4.0,DIV);
 		System.out.println("3.0 + 4.0 = " + df.format(result) + "\n");
+
+		// test the parseNegativeNumber method
+		// testParseNegativeNumber();
 
 		// test the getRPN method
 		// 1
@@ -657,29 +658,42 @@ public class FinanceCalculator { // add generic
 		ArrayList<Character> RPNExpression = calc.getRPN(expr);
 		System.out.println("RPNExpression: " + RPNExpression.toString() + "\n");
 		// 2
-		// expr = "3 + 4 * 2 / (1 - 5) ^ 2";
-		// System.out.println();
-		// calculator.getRPN(expr);
-		// System.out.println();
-		// set up the String builder
+		expr = "3 + 4 * 2 / (1 - 5) ^ 2";
+		RPNExpression = calc.getRPN(expr);
+		System.out.println("RPNExpression: " + RPNExpression.toString() + "\n");
 		
 		// test the toRealRPN method
 		// 1
+		expr = "((5 * (2 + 7)) / (3 - (8 - 4))) * (1 + 4)";
+		RPNExpression = calc.getRPN(expr);
 		String rpn = calc.toRealRPN(RPNExpression);
 		System.out.println("rpn: " + rpn + "\n");
 		// 2
+		expr = "((7 - 3) * (9 + 2)) + ((8 / 4) * (6 + 1)) - ((5 * 2) + (1 + 9))";
+		RPNExpression = calc.getRPN(expr);
+		rpn = calc.toRealRPN(RPNExpression);
+		System.out.println("rpn: " + rpn + "\n");
 
 		// test the evaluate method
 		// 1
+		expr = "(9 + 2) * ((4 - 2) * (5 + 3) + 1) - (7 - 5) * ((6 + 3) * (2 - 1) + 4)";
+		RPNExpression = calc.getRPN(expr);
+		rpn = calc.toRealRPN(RPNExpression);
 		Stack<Object> evaluated = calc.evaluate(rpn);
 		System.out.println("evaluated: " + evaluated + "\n");
 		// 2
-		// expr = "(9 + 2) * ((4 - 2) * (5 + 3) + 1) - (7 - 5) * ((6 + 3) * (2 - 1) + 4)";
+		expr = "((3 + (4 * 2)) / (1 - (5 - 6))) * (2 + 3)";
+		RPNExpression = calc.getRPN(expr);
+		rpn = calc.toRealRPN(RPNExpression);
+		evaluated = calc.evaluate(rpn);
+		System.out.println("evaluated: " + evaluated + "\n");
+
+		// test the String builder
+		// set up the String builder
+		// calculator.evaluate(expr);
+		
 		// calculator.evaluate(result);
 		// System.out.println();
-		// 3
-		// expr = "((7 - 3) * (9 + 2)) + ((8 / 4) * (6 + 1)) - ((5 * 2) + (1 + 9))";
-		// calculator.evaluate(expr);
 
 		// test the DFS method
 		// 1
@@ -688,28 +702,31 @@ public class FinanceCalculator { // add generic
 		System.out.println("result: " + df.format(result) + "\n");
 
 		// test the (main) compute method (getRPN + toRealRPN + evaluate + DFS)
-		/*
 		// 1
 		expr = "(6 + 3 * (5 - 2)) / 4";
 		System.out.println("expr: " + expr + "\n");
-		result = calculator.compute(expr);
+		result = calc.compute(expr);
 		System.out.println("------------------------\n");
 		// 2
 		expr = "((((((((3) + 1) * 2) - 6) / 5) * 8) - 7) + 4)";
 		System.out.println("expr: " + expr + "\n");
-		result = calculator.compute(expr);
+		result = calc.compute(expr);
 		System.out.println("------------------------\n");
 		// 3
 		expr = "(6 +3 *(5- 2))/ 4"; // uneven ver. of 1
 		System.out.println("expr: " + expr + "\n");
-		result = calculator.compute(expr);
+		result = calc.compute(expr);
 		System.out.println("------------------------");
 		// 4
-		((3 + (4 * 2)) / (1 - (5 - 6))) * (2 + 3)
-		*/
-		
-		// System.out.println("args: " + Arrays.toString(args));
-		// String option = args[0];
+
+		// test the currencyConversion method
+		calc.testCurrencyConversion();
+
+		// test the payment planning method\
+		// calc.testPaymentPlanning();
+
+		// test the regression analysis method	
+		// calc.testRegressionPlanning()
 
 	}
 
