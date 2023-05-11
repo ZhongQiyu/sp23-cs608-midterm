@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.text.DecimalFormat;
 
+import java.io.IOException;
+import java.util.EmptyStackException;
+
 /*
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -12,24 +15,17 @@ import okhttp3.Response;
 import org.json.JSONObject;
 */
 
-import java.io.IOException;
-import java.util.EmptyStackException;
-
-// https://www.fncalculator.com/currencyConverter
-// https://microsoft.github.io/react-native-windows/docs/rnm-getting-started
-
 /*
 The implementation of a to take calculations including:
 - addition
 - subtraction
 - multiplication
 - division
-- power
+- regression analysis
+- *power
 - *boolean-based operation (AND, OR, XOR, etc.)
 - *differentiation
 - *integration
-- cash flow analysis
-- regression analysis
 - etc.
 Basically PEMDAS, but the results would differ.
 The final result would be displayed in the screen.
@@ -83,14 +79,19 @@ public class FinanceCalculator { // add generic
 	    private Node<T> left;
 	    private Node<T> right;
 
+	    /* The default constructor to initialize nodes. */
 	    public Node() {
 	    	this.data = null;
 	    	this.left = null;
 	    	this.right = null;
 	    }
 
+	    /*
+	    Non-default constructor of the node.
+	    Assign data to the new node.
+	    Set left and right children to null.
+	    */
 	    public Node(T data) {
-	        //Assign data to the new node, set left and right children to null
 	        this.data = data;
 	        this.left = null;
 	        this.right = null;
@@ -123,20 +124,11 @@ public class FinanceCalculator { // add generic
 			String contents = "";
 			contents += LTP;
 			contents += left != null ? left.toString() : ""; // add the contents of the left node
-			contents += " " + data.toString() + " "; // add the contents of the root node
+			contents += data.toString(); // add the contents of the root node
 			contents += right != null ? right.toString() : ""; // add the contents of the right node
 			contents += RTP;
 			return contents;
 		}
-
-		/*
-		public static void main(String []args) {
-			Node<Integer> testNode = new Node<>(1);
-			testNode.setLeft(new Node(2));
-			testNode.setRight(new Node(3));
-			System.out.println(testNode.toString());
-		}
-		*/
 
 	}
 
@@ -157,7 +149,18 @@ public class FinanceCalculator { // add generic
 	private static final char XOR = '^';
 	private static final char SP = ' ';	
 	private static final ArrayList<Character> NUMS = new ArrayList<Character>(Arrays.asList('0','1','2','3','4','5','6','7','8','9'));
-	
+	private static final Hashtable<String, Double> CRCY = new Hashtable<String, Double>() {{
+        put("CNY",1.0000);
+        put("USD",6.9230);
+        put("INR",0.0840);
+        put("UKP",8.7100);
+        put("EUR",7.5800);
+        put("JPY",0.0510);
+        put("CAD",5.1700);
+        put("AUD",4.6700);
+        put("HKD",0.8800);
+        put("TRY",0.3500);
+    }};
     private String expression; // need to use this
 
 	/* Default constructor of an calculator. */
@@ -171,56 +174,52 @@ public class FinanceCalculator { // add generic
 		this.expression = expression;
 	}
 
-	/*
-	Convert a given amount of money from a type
-	of currency to another. The rate is based
-	with in-time gleaning of data on the website.
-	*/
-	public static double currencyConversion(String[] convArgs) {
-		// clean the user input
-        double amount = Double.parseDouble(convArgs[convArgs.length-1]);
-        // make the conversion
-	OkHttpClient client = new OkHttpClient().newBuilder().build();
-	    Request request = new Request.Builder()
-	      .url("https://api.apilayer.com/fixer/latest?symbols=" + to + "&base=" + from)
-	      .addHeader("apikey", "h4vvQqoB1stw615J4tDGlDrEoiTfPs9V")
-	      .method("GET", null)
-	      .build();
-    	Response response = client.newCall(request).execute();
-	String jsonData = response.body().string();
-    	JSONObject Jobject = new JSONObject(jsonData);
-    	System.out.println(Jobject.getJSONObject("rates"));
-    	double rate=Jobject.getJSONObject("rates").getDouble(to);
-	    
-	double total = rate * amount;
-	// #.00 表示两位小数
-	DecimalFormat df = new DecimalFormat("#0.00"); // 保留两位小数，四舍五入
-	System.out.println("We are converting " + df.format(amount) + " " + from + " to " + to + ".\nThis gives us a total of " + df.format(total) + " " + to + ".\n");
-	return total;
-	}
+	/* Return the expression that was put within the stage of the String. */
+	public String getExpression() { return this.expression; } 
 
 	/*
-	Compute the amount that the credit card balance
-	would need to return amounts from the user. It
-	gives an estimation of the total amount of time
-	where the pay-back would be complete.
+	Test if the expression is a valid one. By means of validity,
+	the open-parenthesis and the closing one must have the right
+	order and a correct count of matching points. The balanced
+	can then be achieved with brackets.
 	*/
-	public static double creditCardPayoff(float balance, float ir, String[] paymentArgs) {
-		// Calculator
-		return 0.0;
-	}
-	
-	/*
-	Calculate the monthly payment that would needed to be made
-	given a set of parameters, being the loan amount, the rate
-	annually for return-interest, and the count of loan terms.
-	*/
-	public static double calculateMonthlyPayment(double loanAmount, double annualInterestRate, int loanTerm) {
-        double monthlyInterestRate = annualInterestRate / 12 / 100;
-        int numberOfPayments = loanTerm * 12;
-        double discountFactor = (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1)
-                / (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments));
-        return loanAmount / discountFactor;
+	public static boolean isBalanced(String expr) {
+        // 使用 Stack 来保存括号
+        Stack<Character> stack = new Stack<>();
+        int count = expr.length();
+        for (int i = 0; i < count; i++) {
+            char x = expr.charAt(i);
+            if (x == '(' || x == '[' || x == '{') {
+                // 当遇到开括号时，将其压入栈中
+                stack.push(x);
+                continue;
+            }
+            // 当遇到闭括号时，如果栈为空，说明没有相应的开括号
+            if (stack.isEmpty())
+                return false;
+            char check;
+            switch (x) {
+                case ')':
+                    check = stack.pop();
+                    if (check == '{' || check == '[')
+                        return false;
+                    break;
+
+                case '}':
+                    check = stack.pop();
+                    if (check == '(' || check == '[')
+                        return false;
+                    break;
+
+                case ']':
+                    check = stack.pop();
+                    if (check == '(' || check == '{')
+                        return false;
+                    break;
+            }
+        }
+        // 如果栈为空，说明所有的开括号都被正确的闭括号匹配了
+        return (stack.isEmpty());
     }
 
 	/*
@@ -284,22 +283,13 @@ public class FinanceCalculator { // add generic
 	}
 
 	/*
-	Test if the expression is a valid one. By means of validity,
-	the open-parenthesis and the closing one must have the right
-	order and a correct count of matching points.
-	*/
-	private boolean isValid(String expression) {
-		// TODO: catch the EmptyStackException
-		return true;
-	}
-
-	/*
 	Trim the original expression so that there is no space
 	between any of the operators within the expression.
 	*/
-	private String trim(String expression) {
-		String trimmed = "";
-		return "";
+	private String parseNegativeNumber() {
+		String expression = this.getExpression();
+		String parsed = ""; //
+		return parsed;
 	}
 
 	/*
@@ -309,9 +299,9 @@ public class FinanceCalculator { // add generic
 		// 创建一个结果列表和一个操作符堆栈。
 		Stack<Character> operators = new Stack<>();
 		ArrayList<Character> results = new ArrayList<>();
-		int index;
 		char current = ' ';
 		int len = expression.length();
+		int index;
 		// 从左到右扫描算式中的每个字符。
 		for (index = 0; index < len; index++) {
 			current = expression.charAt(index);
@@ -326,7 +316,7 @@ public class FinanceCalculator { // add generic
 			case '8':
 			case '9':
 				//如果它是一个数字，则将其输出到结果列表中。
-				System.out.println("The current character is a number, being " + current + ".");
+				//System.out.println("The current character is a number, being " + current + ".");
 				results.add(current);
 				break;
 			case ADD:
@@ -335,7 +325,7 @@ public class FinanceCalculator { // add generic
 			case DIV:
 				//如果它是一个操作符，比较其与操作符堆栈顶部的操作符的优先级。
 				//如果操作符堆栈顶部的操作符优先级高于或等于该操作符，则弹出堆栈中的操作符，将它们输出到结果列表中。
-				System.out.println("The current character is an operator, being " + current + ".");
+				//System.out.println("The current character is an operator, being " + current + ".");
 				int cmpRst;
 				try{
 				  	cmpRst = this.compareTo(operators.peek(),current);
@@ -438,7 +428,7 @@ public class FinanceCalculator { // add generic
 				Node<Character> newNode = new Node<>(currentNotation);
 				operators.push(newNode); // call Integer.valueOf() later in the computation operations
 				//System.out.println("A node of a BST is created: " + newNode.toString());
-				System.out.println("We push the number " + currentNotation + " into the number stack.");
+				//System.out.println("We push the number " + currentNotation + " into the number stack.");
 				//handle negative numbers
 				break;
 			case ADD:
@@ -455,7 +445,7 @@ public class FinanceCalculator { // add generic
 				//System.out.println("We set up a new node whose data is the operator, with children being the two popped nodes.");
 				//然后将新创建的节点压入栈中。
 				operators.push(opNode); // Stack<Node>? change the data type
-				System.out.println("We push the operator " + currentNotation + " into the operator stack.");
+				//System.out.println("We push the operator " + currentNotation + " into the operator stack.");
 				break;
 			case SP:
 				//System.out.println("The current entry is a space, and we have skipped this.\n");
@@ -507,35 +497,89 @@ public class FinanceCalculator { // add generic
 
 		System.out.println("Step 4: take DFS through the BST");
 		Node<Object> evaluated = (Node<Object>) tree.pop();
-		double result = DFS(evaluated);
+		double result = this.DFS(evaluated);
 		DecimalFormat df = new DecimalFormat("#0.00");
 		System.out.println("result: " + df.format(result) + "\n");
 		return result;
 	}
 
 	/*
+	Convert a given amount of money from a type
+	of currency to another. The rate is based
+	with in-time gleaning of data on the website.
+	*/
+	public static double currencyConversion(String[] convArgs) {
+		// clean the user input
+        String from = convArgs[0];
+        String to = convArgs[1];
+        double amount = Double.parseDouble(convArgs[convArgs.length-1]);
+        // make the conversion
+		String output = " ";
+		double fromRate = CRCY.get(from);
+		double toRate = CRCY.get(to);
+		double total = fromRate / toRate * amount;
+		// #.00 表示两位小数
+		DecimalFormat df = new DecimalFormat("#0.00"); // 保留两位小数，四舍五入
+		System.out.println("We are converting " + df.format(amount) + " " + from + " to " + to + ".\nThis gives us a total of " + df.format(total) + " " + to + ".\n");
+		return total;
+	}
+
+	/*
+	Compute the amount that the credit card balance
+	would need to return amounts from the user. It
+	gives an estimation of the total amount of time
+	where the pay-back would be complete.
+	*/
+	public static double creditCardPayoff(float balance, float ir, String[] paymentArgs) {
+		// Calculator
+		return 0.0;
+	}
+	
+	/*
+	Calculate the monthly payment that would needed to be made
+	given a set of parameters, being the loan amount, the rate
+	annually for return-interest, and the count of loan terms.
+	*/
+	public static double calculateMonthlyPayment(double loanAmount, double annualInterestRate, int loanTerm) {
+        double monthlyInterestRate = annualInterestRate / 12 / 100;
+        int numberOfPayments = loanTerm * 12;
+        double discountFactor = (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1)
+                / (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments));
+        return loanAmount / discountFactor;
+    }
+
+	/*
 	Display the information that is stored in the calculator.
 	*/
 	public String toString() {
-		//2
-		String baseInfo = "";
-		return "";
+		// print the base information of the calculator, mainly the expression
+		String baseInfo = "Expression: " + this.getExpression() + "\n";
+		// print the information for the menu
+		String menuInfo = "Option 1: Regular Mode ~ The Algebraic Calculator (+, -, *, /)\n" +
+						  "Option 2: Flexible Mode ~ The Currency Converter and Currency Payment Planner\n" +
+						  "Option 3: Advanced Mode ~ The Mini-sized Scientific Computer (in-dev)\n";
+		return baseInfo + menuInfo;
 	}
 
-	/* The driver function. */
-	public static void main(String[] args) {
-		// parse the arguments
-		// - if the option is 1, then the regular mode would start i.e. the algebraic calculator
-		// - if the option is 2, then the flexible mode would start i.e. the currency from A to B
-		// - if the option is 3, then the advanced mode would start i.e. the calc + scientific computing
-		
-		// System.out.println("args: " + Arrays.toString(args));
-		// String option = args[0];
+	/* --FOR TESTS START-- */
 
-		// test the static variable
-		System.out.println("CRCY: " + CRCY + ".\n");
+	/* Generate a node. */
+	public Node<Object> genNode(Object data) { return new Node<Object>(data); }
 
-		// test the currencyConversion method: ("CNY","JPY",100); ("USD","INR",200); ("CNY","EUR",5)
+	/* Return the node that was set with a children node. */
+	public Node<Object> genChildren(Object rootData, Object childrenData, String dir) {
+		Node<Object> rootNode = new Node<>(rootData);
+		Node<Object> childrenNode = new Node<>(childrenData);
+		// set with assumed robustness in input
+		if (dir.equals("L")) rootNode.setLeft(childrenNode);
+		else rootNode.setRight(childrenNode);
+		return rootNode;
+	}
+
+	/* --FOR TESTS END-- */
+
+	public void testCurrencyConversion() {
+		// add logic to handle the difference
 		Scanner sc = new Scanner(System.in);
 		String[] convArgs = new String[CONV_ARGS_CT];
 		String userCommand = " ";
@@ -549,59 +593,124 @@ public class FinanceCalculator { // add generic
 			FinanceCalculator.currencyConversion(convArgs);
 		}
 		sc.close();
-		System.out.println("Test Finished.\n");
-		
-		// test the constructor of the FinanceCalculator
-		FinanceCalculator calculator = new FinanceCalculator();
+		System.out.println("Test Finished.\n"); // robustness
+	}
+
+	/* The driver function. */
+	public static void main(String[] args) {
+
+		/* Tests for static variables */
+		// test the CRCY static variable in FinanceCalculator
+		System.out.println("CRCY: " + CRCY + ".\n");
+
+		/* Tests for Node */
+
+		// test the constructor and the setData methods of the Node
+		FinanceCalculator calc = new FinanceCalculator();
+		System.out.println("new Node(1): " + calc.genNode(1) + "\n");
+
+		// test the getData method from the Node
+		System.out.println("new Node(1).getData(): " + calc.genNode(1).getData() + "\n");
+
+		// test the getLeft and setLeft method for the Node
+		System.out.println("new Node(1).getLeft() (left==new Node(2)): " + calc.genChildren(1,2,"L") + "\n");
+
+		// test the getRight and setRight method for the Node
+		System.out.println("new Node(1).getRight() (right==new Node(3)): " + calc.genChildren(1,3,"R") + "\n");
+
+		/* Tests for FinanceCalculator */
+
+		// test the constructor of the FinanceCalculator class
+		calc = new FinanceCalculator();
+		System.out.println("calc:\n" + calc.toString());
+
+		// test the isBalanced static method
+		String bracketSet = "(({}[]))";
+		System.out.println(FinanceCalculator.isBalanced(bracketSet));
+
+		// test the currencyConversion method
+		calc.testCurrencyConversion();
+
+		//	calc.testPaymentPlanning();
 
 		// test the getPriority method
-		System.out.println("The priority of * is " + calculator.getPriority(MUL) + ".");
-		System.out.println("The priority of + is " + calculator.getPriority(ADD) + ".");
-		System.out.println("The priority of ( is " + calculator.getPriority(LTP) + ".\n");
+		System.out.println("The priority of * is " + calc.getPriority(MUL) + ".");
+		System.out.println("The priority of + is " + calc.getPriority(ADD) + ".");
+		System.out.println("The priority of ( is " + calc.getPriority(LTP) + ".\n");
 		//System.out.println("The priority of ^ is " + calculator.getPriority("^") + ".\n");
 
 		// test the compareTo method
-		System.out.println("The comparison between + and * gives us the difference of priority to be " + calculator.compareTo('+','*') + ".");
-		System.out.println("The comparison between * and ( gives us the difference of priority to be " + calculator.compareTo('*','(') + ".\n");
+		System.out.println("The comparison between + and * gives us the difference of priority to be " + calc.compareTo('+','*') + ".");
+		System.out.println("The comparison between * and ( gives us the difference of priority to be " + calc.compareTo('*','(') + ".\n");
 		//System.out.println("The comparison between ^ and + gives us the difference of priority to be " + calculator.compareTo("*","("));
 
 		// test the (sub) compute method
-		double result = calculator.compute(1.0,2.0,ADD);
+		double result = calc.compute(1.0,2.0,ADD);
 		DecimalFormat df = new DecimalFormat("#0.00");
 		System.out.println("1.0 + 2.0 = " + df.format(result));
-		result = calculator.compute(3.0,4.0,DIV);
+		result = calc.compute(3.0,4.0,DIV);
 		System.out.println("3.0 + 4.0 = " + df.format(result) + "\n");
 
-		// test the isValid method
-
 		// test the getRPN method
-		// ArrayList<Character> rpn = calculator.getRPN(expr);
-		// System.out.println();
+		// 1
+		String expr = "((3 + (7 * 2)) - (1 / 4)) * (5 - 2)";
+		ArrayList<Character> RPNExpression = calc.getRPN(expr);
+		System.out.println("RPNExpression: " + RPNExpression.toString() + "\n");
+		// 2
 		// expr = "3 + 4 * 2 / (1 - 5) ^ 2";
+		// System.out.println();
 		// calculator.getRPN(expr);
 		// System.out.println();
 		// set up the String builder
 		
 		// test the toRealRPN method
+		// 1
+		String rpn = calc.toRealRPN(RPNExpression);
+		System.out.println("rpn: " + rpn + "\n");
+		// 2
 
 		// test the evaluate method
+		// 1
+		Stack<Object> evaluated = calc.evaluate(rpn);
+		System.out.println("evaluated: " + evaluated + "\n");
+		// 2
 		// expr = "(9 + 2) * ((4 - 2) * (5 + 3) + 1) - (7 - 5) * ((6 + 3) * (2 - 1) + 4)";
 		// calculator.evaluate(result);
-		//System.out.println();
-		//expr = "((7 - 3) * (9 + 2)) + ((8 / 4) * (6 + 1)) - ((5 * 2) + (1 + 9))";
-		//calculator.evaluate(expr);
+		// System.out.println();
+		// 3
+		// expr = "((7 - 3) * (9 + 2)) + ((8 / 4) * (6 + 1)) - ((5 * 2) + (1 + 9))";
+		// calculator.evaluate(expr);
 
-		// test the (main) compute method
-		// expr-1
-		String expr = "(6 + 3 * (5 - 2)) / 4";
+		// test the DFS method
+		// 1
+		Node<Object> root = (Node<Object>) evaluated.pop();
+		result = calc.DFS(root);
+		System.out.println("result: " + df.format(result) + "\n");
+
+		// test the (main) compute method (getRPN + toRealRPN + evaluate + DFS)
+		/*
+		// 1
+		expr = "(6 + 3 * (5 - 2)) / 4";
 		System.out.println("expr: " + expr + "\n");
 		result = calculator.compute(expr);
 		System.out.println("------------------------\n");
-		// expr-2
+		// 2
 		expr = "((((((((3) + 1) * 2) - 6) / 5) * 8) - 7) + 4)";
 		System.out.println("expr: " + expr + "\n");
 		result = calculator.compute(expr);
-		//System.out.println("result: " + df.format(result) + ".");
+		System.out.println("------------------------\n");
+		// 3
+		expr = "(6 +3 *(5- 2))/ 4"; // uneven ver. of 1
+		System.out.println("expr: " + expr + "\n");
+		result = calculator.compute(expr);
+		System.out.println("------------------------");
+		// 4
+		((3 + (4 * 2)) / (1 - (5 - 6))) * (2 + 3)
+		*/
+		
+		// System.out.println("args: " + Arrays.toString(args));
+		// String option = args[0];
+
 	}
 
 }
